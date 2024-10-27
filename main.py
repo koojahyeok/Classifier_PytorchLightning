@@ -1,10 +1,8 @@
 import os
 import torch
 import yaml
-# import wandb
 import argparse
 
-import utils
 import model
 import dataset
 import pytorch_lightning as pl
@@ -26,12 +24,6 @@ if __name__ == "__main__":
 
     with open(args.cfg_dir, "r") as f:
         cfg = yaml.load(f, Loader=yaml.FullLoader)
-    
-    # wandb.init(project="DETR weeds finetuning")
-    
-    # wandb.run.name = "padday_weeds_DETR_fintuning"
-    # wandb.run.save()
-    # wandb.config.update(cfg)    
     
     cfg = type('cfg', (), cfg)
     set_seed(cfg.seed)

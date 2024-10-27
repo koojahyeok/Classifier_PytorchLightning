@@ -11,6 +11,10 @@ def load_model(cfg):
     elif cfg.model == "efficientnet_b4":
         model = torchvision.models.efficientnet_b4(weights=None)
         model.classifier[1].out_features = cfg.num_classes
+    
+    elif cfg.model == "googlenet":
+        model = model = torchvision.models.googlenet(weights=None)
+        model.fc.out_features = cfg.num_classes
 
     else:
         raise NotImplementedError("This model is not implemented.")
@@ -22,12 +26,14 @@ class ClassifierEngine(pl.LightningModule):
         super(ClassifierEngine, self).__init__()
         self.model = load_model(cfg)
         self.criterion = nn.CrossEntropyLoss()
+
         self.lr = cfg.lr
         self.weight_decay = cfg.weight_decay
         self.milestones = cfg.milestones
         self.gamma = cfg.gamma
         self.last_epoch = cfg.last_epoch
         self.scheduler_verbosity = cfg.scheduler_verbosity
+
         self.validation_step_outputs = []
         self.test_step_outputs = []
 
@@ -39,6 +45,7 @@ class ClassifierEngine(pl.LightningModule):
         img, target = batch
         output = self(img)
         loss = self.criterion(output, target)
+
         self.log('train_loss', loss)
         self.log(
             "lr_abs", lr, prog_bar=True, logger=True, on_step=True, on_epoch=False
@@ -49,10 +56,12 @@ class ClassifierEngine(pl.LightningModule):
         img, target = batch
         output = self(img)
         loss = self.criterion(output, target)
+
         pred = output.argmax(dim=1, keepdim=True)
         correct = pred.eq(target.view_as(pred)).sum().item()
-        preds = {"val_loss" : loss, "correct" : correct}
         self.validation_step_outputs.append(preds) 
+        preds = {"val_loss" : loss, "correct" : correct}
+
         self.log('val_loss', loss)
         self.log('acc', correct)
         return loss
@@ -61,6 +70,7 @@ class ClassifierEngine(pl.LightningModule):
         avg_loss = torch.stack([x['val_loss'] for x in self.validation_step_outputs]).mean()
         all_correct = sum([output["correct"] for output in self.test_step_outputs])
         avg_acc = all_correct / len(self.validation_step_outputs)
+
         self.log('accuracy', avg_acc)
         self.log('avg_val_loss', avg_loss)
         self.validation_step_outputs.clear()
@@ -69,6 +79,7 @@ class ClassifierEngine(pl.LightningModule):
         img, target = batch
         output = self(img)
         loss = self.criterion(output, target)
+        
         pred = output.argmax(dim=1, keepdim=True)
         correct = pred.eq(target.view_as(pred)).sum().item()/ len(target)
         preds  = {"correct": correct}
