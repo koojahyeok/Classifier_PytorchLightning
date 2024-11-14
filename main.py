@@ -50,7 +50,8 @@ if __name__ == "__main__":
         callbacks=checkpoint_callback,
         gradient_clip_val=cfg.gradient_clip_val,
         accumulate_grad_batches=cfg.accumulate_grad_batches,
-        log_every_n_steps=cfg.log_every_n_steps
+        log_every_n_steps=cfg.log_every_n_steps,
+        check_val_every_n_epoch=cfg.check_val_every_n_epoch, ,
     )
     trainer.fit(classifier, dm)
     if cfg.mode == 'cls':
