@@ -11,13 +11,20 @@ import numpy as np
 
 import utils
 
+from utils import ContrastiveLearningViewGenerator
 
 class CustomDataset(Dataset):
     def __init__(self, cfg, pth, len):
         self.json_pth = pth
 
-        self.img_transform = utils.get_image_transform(cfg)
-        self.box_transform = utils.get_box_transform(cfg)
+        if cfg.mode == 'cls':
+            self.img_transform = utils.get_img_transform(cfg)
+        elif cfg.mode == 'simclr':
+            self.img_transform = ContrastiveLearningViewGenerator(
+                utils.get_img_transform_sim(cfg),
+                cfg.n_views)
+        else:
+            raise NotImplementedError("other mode is not implemented.")
 
         self.img_size = cfg.img_size
         self.len = len

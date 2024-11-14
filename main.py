@@ -53,4 +53,5 @@ if __name__ == "__main__":
         log_every_n_steps=cfg.log_every_n_steps
     )
     trainer.fit(classifier, dm)
-    trainer.test(classifier, datamodule=dm)
+    if cfg.mode == 'cls':
+        trainer.test(classifier, datamodule=dm)
